@@ -1,0 +1,11 @@
+---
+public_interfaces:
+  - eno0
+
+host_public_tcp_ports:
+  - 80
+  - 443
+
+docker_public_tcp_ports:
+  - 80
+  - 443

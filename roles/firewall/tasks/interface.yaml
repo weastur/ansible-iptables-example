@@ -1,0 +1,58 @@
+---
+- name: "Flush {{ chain }} chain"
+  ansible.builtin.iptables:
+   chain: "{{ chain }}"
+   flush: yes
+
+- name: "Allow all ICMP for {{ chain }} chain and {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    protocol: icmp
+    jump: ACCEPT
+    in_interface: "{{ interface }}"
+
+- name: "Allow related and established connections for {{ chain }} chain on {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    protocol: all
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+    in_interface: "{{ interface }}"
+
+- name: "Allow all traffic from {{ ip }} for {{ chain }} chain on {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    protocol: all
+    jump: ACCEPT
+    in_interface: "{{ interface }}"
+    source: "{{ ip }}"
+  loop: "{{ trusted_networks }}"
+  loop_control:
+    loop_var: ip
+
+- name: "Allow all TCP traffic to {{ port }} for {{ chain }} chain and {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    protocol: tcp
+    jump: ACCEPT
+    in_interface: "{{ interface }}"
+    destination_port: "{{ port | int }}"
+  loop: "{{ public_tcp_ports }}"
+  loop_control:
+    loop_var: port
+
+- name: "Log 100/minute drops for {{ chain }} chain and {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    jump: LOG
+    limit: 100/m
+    log_level: info
+    log_prefix: "IPTABLES: INFO:"
+    in_interface: "{{ interface }}"
+
+- name: "Reject all the rest for {{ chain }} chain and {{ interface }} interface"
+  ansible.builtin.iptables:
+    chain: "{{ chain }}"
+    jump: REJECT
+    in_interface: "{{ interface }}"
+

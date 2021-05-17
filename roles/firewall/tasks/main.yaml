@@ -1,0 +1,31 @@
+---
+- name: Install iptables-persistent
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+    update_cache: yes
+
+- name: Set INPUT policy to ACCEPT
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: ACCEPT
+
+- name: Configure INPUT chain
+  include_tasks: chain.yaml
+  vars:
+    chain: INPUT
+    public_tcp_ports: "{{ host_public_tcp_ports | default([]) }}"
+
+- name: Configure DOCKER-USER chain
+  include_tasks: chain.yaml
+  vars:
+    chain: DOCKER-USER
+    public_tcp_ports: "{{ docker_public_tcp_ports | default([]) }}"
+
+- name: Save current state of the firewall in system file
+  community.general.iptables_state:
+    state: saved
+    path: /etc/iptables/rules.v4
+

@@ -1,0 +1,7 @@
+---
+- name: "Configure {{ chain }} chain"
+  include_tasks: interface.yaml
+  loop: "{{ public_interfaces | default([]) }}"
+  loop_control:
+    loop_var: interface
+

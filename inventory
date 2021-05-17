@@ -1,0 +1,4 @@
+[all]
+host-1 ansible_host=
+host-2 ansible_host=
+
